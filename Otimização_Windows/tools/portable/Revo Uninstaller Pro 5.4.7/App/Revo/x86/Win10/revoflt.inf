@@ -1,0 +1,96 @@
+;;;
+;;; Revoflt
+;;;
+;;;
+;;; Copyright (c) 2009, VS Revo Group Ltd.
+;;;
+
+[Version]
+Signature   = "$Windows NT$"
+Class       = "ActivityMonitor"                         ;This is determined by the work this filter driver does
+ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}    ;This value is determined by the Class
+Provider    = %VSRG%
+DriverVer   = 12/30/2009,1.0.0.4
+CatalogFile = 
+
+
+[DestinationDirs]
+DefaultDestDir          = 12
+Revoflt.DriverFiles     = 12            ;%windir%\system32\drivers
+
+;;
+;; Default install sections
+;;
+
+[DefaultInstall]
+OptionDesc          = %ServiceDescription%
+CopyFiles           = Revoflt.DriverFiles
+
+[DefaultInstall.Services]
+AddService          = %ServiceName%,,Revoflt.Service
+
+;;
+;; Default uninstall sections
+;;
+
+[DefaultUninstall]
+DelFiles   = Revoflt.DriverFiles
+
+[DefaultUninstall.Services]
+DelService = %ServiceName%,0x200      ;Ensure service is stopped before deleting
+
+;
+; Services Section
+;
+
+[Revoflt.Service]
+DisplayName      = %ServiceName%
+Description      = %ServiceDescription%
+ServiceBinary    = %12%\%DriverName%.sys        ;%windir%\system32\drivers\
+Dependencies     = FltMgr
+ServiceType      = 2                            ;SERVICE_FILE_SYSTEM_DRIVER
+StartType        = 3                            ;SERVICE_DEMAND_START
+ErrorControl     = 1                            ;SERVICE_ERROR_NORMAL
+LoadOrderGroup   = "FSFilter Activity Monitor"
+AddReg           = Revoflt.AddRegistry
+
+;
+; Registry Modifications
+;
+
+[Revoflt.AddRegistry]
+HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
+HKR,"Instances\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%
+HKR,"Instances\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%
+
+;
+; Copy Files
+;
+
+[Revoflt.DriverFiles]
+%DriverName%.sys
+
+[Revoflt.UserFiles]
+
+[SourceDisksFiles]
+revoflt.sys = 1,,
+
+[SourceDisksNames]
+1 = %DiskId1%,,,
+
+;;
+;; String Section
+;;
+
+[Strings]
+VSRG			= "VS Revo Group"
+ServiceDescription      = "Revo Uninstaller Filter driver"
+ServiceName             = "Revoflt"
+DriverName              = "revoflt"
+DiskId1                 = "Revoflt Device Installation Disk"
+
+;Instances specific information.
+DefaultInstance         = "Revoflt - Top Instance"
+Instance1.Name          = "Revoflt - Top Instance"
+Instance1.Altitude      = "370330"
+Instance1.Flags         = 0x0          ; Set automatic attachments
