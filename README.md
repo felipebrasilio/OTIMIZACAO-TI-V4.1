@@ -426,27 +426,6 @@ LOGOFF FORCADO
 7. Evite executar múltiplas instâncias ao mesmo tempo.
 8. Use ferramentas externas, como Dism++, apenas com análise técnica.
 
-## Recomendações para publicação no GitHub
-
-Antes de publicar, revise:
-
-- dados pessoais em comentários ou logs;
-- arquivos temporários;
-- executáveis de terceiros dentro de `tools/portable`;
-- payloads redistribuíveis em `payloads/ClassicApps`;
-- licença de uso;
-- permissões de distribuição de ferramentas externas;
-- binários pagos ou proprietários, como **Revo Uninstaller Pro**, devem respeitar a licença do fornecedor e, em repositórios públicos, podem ser documentados como dependência opcional em vez de serem redistribuídos diretamente;
-- prints, logs ou evidências que possam conter nomes de máquina, domínio, IPs internos ou usuários.
-
-## Observação sobre ferramentas de terceiros
-
-As ferramentas em `tools/portable/` são tratadas como recursos auxiliares e opcionais.
-
-Caso o repositório seja público, valide a licença de cada ferramenta antes de distribuir os executáveis diretamente. Ferramentas proprietárias ou pagas, como **Revo Uninstaller Pro**, devem ser usadas somente quando houver licença válida e permissão de uso/distribuição conforme os termos do fornecedor.
-
-Uma alternativa recomendada para repositórios públicos é manter apenas a estrutura de pastas e a documentação de instalação, sem incluir executáveis proprietários.
-
 ## Aviso técnico
 
 Este projeto executa comandos administrativos no Windows. Algumas ações podem alterar configurações do sistema, limpar caches, reiniciar serviços, remover políticas, resetar rede ou exigir reinicialização.
