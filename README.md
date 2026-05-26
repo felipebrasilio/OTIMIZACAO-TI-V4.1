@@ -6,6 +6,7 @@
 ![Batch](https://img.shields.io/badge/Batch-CMD-informational)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
 ![Status](https://img.shields.io/badge/status-V4.1%20PLUS-success)
+![License](https://img.shields.io/badge/license-MIT-green)
 ![Modo](https://img.shields.io/badge/execu%C3%A7%C3%A3o-admin%20required-orange)
 
 ## Visão geral
@@ -23,7 +24,7 @@ O projeto foi desenvolvido para apoiar operações de TI com foco em:
 - diagnóstico completo;
 - manutenção rápida e avançada;
 - inventário técnico em painel local;
-- uso assistido de ferramentas portáteis.
+- uso assistido de ferramentas portáteis, incluindo CrystalDiskInfo, TreeSize Free, Dism++ e Revo Uninstaller Pro.
 
 A versão **V4.1 PLUS** adiciona melhorias de segurança, controle de concorrência, logs centralizados, modo *dry-run* para ações sensíveis e melhor organização dos módulos externos.
 
@@ -128,7 +129,8 @@ O projeto organiza ferramentas externas opcionais em uma estrutura própria:
 
 - CrystalDiskInfo;
 - TreeSize Free;
-- Dism++.
+- Dism++;
+- Revo Uninstaller Pro.
 
 O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferramenta mediante confirmação forte e não automatiza cliques ou rotinas internas do executável.
 
@@ -146,7 +148,8 @@ O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferr
 │   ├── portable/
 │   │   ├── CrystalDiskInfo/
 │   │   ├── TreeSizeFree/
-│   │   └── DismPP/
+│   │   ├── DismPP/
+│   │   └── RevoUninstallerPro/
 │   └── inventario/
 │       └── Inventario-Corporativo-N3-LIVE-V4.ps1
 └── docs/
@@ -373,9 +376,10 @@ Abre ferramentas externas opcionais:
 
 - `CrystalDiskInfoPortable.exe`;
 - `TreeSizeFree.exe`;
-- `Dism++`.
+- `Dism++`;
+- `Revo Uninstaller Pro`.
 
-O Dism++ exige confirmação forte antes de abrir.
+O Dism++ exige confirmação forte antes de abrir. O Revo Uninstaller Pro deve ser usado de forma manual assistida para desinstalação avançada e limpeza de sobras de programas.
 
 ## Menu I: Inventário LIVE
 
@@ -432,7 +436,16 @@ Antes de publicar, revise:
 - payloads redistribuíveis em `payloads/ClassicApps`;
 - licença de uso;
 - permissões de distribuição de ferramentas externas;
+- binários pagos ou proprietários, como **Revo Uninstaller Pro**, devem respeitar a licença do fornecedor e, em repositórios públicos, podem ser documentados como dependência opcional em vez de serem redistribuídos diretamente;
 - prints, logs ou evidências que possam conter nomes de máquina, domínio, IPs internos ou usuários.
+
+## Observação sobre ferramentas de terceiros
+
+As ferramentas em `tools/portable/` são tratadas como recursos auxiliares e opcionais.
+
+Caso o repositório seja público, valide a licença de cada ferramenta antes de distribuir os executáveis diretamente. Ferramentas proprietárias ou pagas, como **Revo Uninstaller Pro**, devem ser usadas somente quando houver licença válida e permissão de uso/distribuição conforme os termos do fornecedor.
+
+Uma alternativa recomendada para repositórios públicos é manter apenas a estrutura de pastas e a documentação de instalação, sem incluir executáveis proprietários.
 
 ## Aviso técnico
 
@@ -453,13 +466,9 @@ Use em ambiente controlado, revise os logs e mantenha backups quando necessário
 
 ## Licença
 
-Defina a licença antes de publicar este projeto em repositório público.
+Este projeto está licenciado sob a licença **MIT**, uma licença aberta e permissiva que permite uso, cópia, modificação, distribuição e sublicenciamento, desde que o aviso de copyright e a licença sejam mantidos.
 
-Sugestões comuns:
-
-- MIT, para uso aberto e permissivo;
-- Apache 2.0, para uso aberto com cláusulas adicionais;
-- licença privada, caso o projeto seja destinado apenas a uso interno.
+Consulte o arquivo [`LICENSE`](./LICENSE) para mais detalhes.
 
 ## Autor
 
