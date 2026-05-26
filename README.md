@@ -1,384 +1,471 @@
-# \# OTIMIZACAO TI V4.1 PLUS - DOCUMENTACAO TECNICA
+# OTIMIZAÇÃO TI V4.1 PLUS
+
+> Suite técnica para manutenção, diagnóstico, otimização e suporte operacional em ambientes Windows.
+
+![Windows](https://img.shields.io/badge/Windows-10%2F11%20%7C%20Server-blue)
+![Batch](https://img.shields.io/badge/Batch-CMD-informational)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
+![Status](https://img.shields.io/badge/status-V4.1%20PLUS-success)
+![Modo](https://img.shields.io/badge/execu%C3%A7%C3%A3o-admin%20required-orange)
+
+## Visão geral
+
+**OTIMIZAÇÃO TI V4.1 PLUS** é uma solução técnica para padronizar rotinas de manutenção, reparo, diagnóstico e suporte em computadores Windows.
+
+O projeto foi desenvolvido para apoiar operações de TI com foco em:
 
-# 
+- limpeza profunda do sistema;
+- reparo de integridade do Windows;
+- otimização de desempenho;
+- correção de rede;
+- correção de impressoras;
+- governança de recursos de IA do Windows;
+- diagnóstico completo;
+- manutenção rápida e avançada;
+- inventário técnico em painel local;
+- uso assistido de ferramentas portáteis.
+
+A versão **V4.1 PLUS** adiciona melhorias de segurança, controle de concorrência, logs centralizados, modo *dry-run* para ações sensíveis e melhor organização dos módulos externos.
 
-# \## Autor e objetivo
+## Objetivo do projeto
+
+O objetivo do **OTIMIZAÇÃO TI** é oferecer um orquestrador local, portátil e organizado para técnicos de suporte, analistas de infraestrutura e administradores que precisam executar rotinas repetitivas com mais padronização, rastreabilidade e segurança operacional.
 
-# Eu desenvolvi a solucao \*\*OTIMIZACAO TI\*\* para padronizar manutencao tecnica de Windows com foco em:
+Ele não substitui a análise técnica humana. O projeto funciona como um painel operacional para acelerar tarefas comuns, reduzir erros manuais e manter registro das ações executadas.
 
-# \- limpeza profunda,
+## Principais recursos
 
-# \- reparo de integridade,
+### Manutenção e otimização
 
-# \- performance,
+- Limpeza de arquivos temporários do Windows.
+- Limpeza multiusuário de caches temporários.
+- Limpeza de cache de navegadores em múltiplos perfis.
+- Limpeza de Windows Update e Delivery Optimization.
+- Limpeza de relatórios WER, dumps e minidumps antigos.
+- Limpeza de thumbnail cache e icon cache.
+- Limpeza de lixeira com confirmação.
+- Execução de `DISM /StartComponentCleanup`.
+- Execução de `DISM /RestoreHealth`.
+- Execução de `SFC /scannow`.
+- Otimização de volumes fixos com `Optimize-Volume`.
+- Aplicação de políticas com `gpupdate /force`.
+- Comparativo de espaço em disco antes e depois da manutenção.
+
+### Desempenho
+
+- Criação e ativação do plano de energia **Desempenho Máximo**.
+- Ajustes de energia para operação em AC.
+- Rotinas de integridade e otimização do sistema.
+- Flush DNS ao final do fluxo.
+
+### Rede
+
+- Flush e registro de DNS.
+- Renovação de IP, quando o modo de execução permite.
+- Limpeza de cache ARP e destination cache.
+- Reset de TCP/IP e Winsock, exceto em modo remoto.
+- Reset de WinHTTP proxy.
+- Testes básicos de conectividade:
+  - loopback;
+  - IP público;
+  - DNS;
+  - HTTPS.
+
+### Impressoras
+
+- Inventário de impressoras instaladas.
+- Limpeza de jobs travados.
+- Reset do spooler.
+- Limpeza da pasta `spool\PRINTERS`.
+- Inicialização de serviços relacionados.
+- Validação do `spoolsv.exe` com SFC.
+- Relatório final do módulo.
+
+### Governança de IA do Windows
+
+O módulo de IA local foi reforçado na versão **V4.1 PLUS** com controles de segurança para diagnóstico, desativação, remoção e reversão de políticas relacionadas a recursos de IA do Windows.
+
+Recursos disponíveis:
+
+- diagnóstico;
+- desativação por políticas;
+- remoção Appx/Recall;
+- remoção profunda protegida;
+- bloqueio de reinstalação;
+- remoção completa;
+- reversão de políticas;
+- *dry-run* completo.
+
+Controles de segurança:
+
+- modo *dry-run* para gerar relatório sem alterar o sistema;
+- confirmação forte para ações destrutivas;
+- uso de *allowlist* para filtros positivos;
+- ações profundas bloqueadas por padrão;
+- ações profundas liberadas somente com parâmetro explícito;
+- edição JSON por parse estrutural, evitando substituições globais cegas;
+- trilha de execução por item com status `WouldDo`, `Done`, `Failed` e `Skipped`.
+
+### Inventário LIVE
+
+O módulo **Inventário LIVE** abre um painel local para coleta, acompanhamento e exportação de dados técnicos.
+
+Recursos principais:
+
+- coleta local e remota;
+- dados de sistema, hardware, armazenamento, rede, software, usuários, segurança, patches, serviços e eventos;
+- diagnóstico remoto com normalização de alvo;
+- validação de WinRM e portas `5985`/`5986`;
+- mensagens orientativas para falhas comuns;
+- fallback com ajuste de `TrustedHosts` em cenários por IP, quando aplicável;
+- painel com progresso e histórico de coletas e ações;
+- exportação em JSON;
+- exportação TXT seletiva por seções escolhidas.
+
+### Ferramentas portáteis
+
+O projeto organiza ferramentas externas opcionais em uma estrutura própria:
+
+- CrystalDiskInfo;
+- TreeSize Free;
+- Dism++.
+
+O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferramenta mediante confirmação forte e não automatiza cliques ou rotinas internas do executável.
+
+## Estrutura do projeto
+
+```text
+.
+├── OtimizacaoTI_V4_PLUS.bat
+├── modules/
+│   ├── OtimizacaoTI_AI_Local.ps1
+│   └── OtimizacaoTI_ClassicApps.ps1
+├── payloads/
+│   └── ClassicApps/
+├── tools/
+│   ├── portable/
+│   │   ├── CrystalDiskInfo/
+│   │   ├── TreeSizeFree/
+│   │   └── DismPP/
+│   └── inventario/
+│       └── Inventario-Corporativo-N3-LIVE-V4.ps1
+└── docs/
+```
+
+### Arquivos e pastas principais
+
+| Caminho | Descrição |
+|---|---|
+| `OtimizacaoTI_V4_PLUS.bat` | Orquestrador principal do sistema. |
+| `modules/OtimizacaoTI_AI_Local.ps1` | Módulo de IA local com *dry-run*, trilha de ações e controles de segurança. |
+| `modules/OtimizacaoTI_ClassicApps.ps1` | Módulo para apps clássicos do Windows. |
+| `payloads/ClassicApps/` | Payloads locais usados pelo módulo de apps clássicos. |
+| `tools/portable/` | Ferramentas externas opcionais. |
+| `tools/inventario/` | Módulo de Inventário LIVE com painel local. |
+| `docs/` | Documentação técnica do projeto. |
+
+## Requisitos
+
+- Windows 10, Windows 11 ou Windows Server compatível.
+- PowerShell 5.1 ou superior.
+- Execução como administrador.
+- Permissão para execução de scripts PowerShell, quando aplicável.
+- Acesso local aos módulos e ferramentas opcionais incluídas no projeto.
+
+## Como executar
+
+1. Baixe ou clone este repositório.
+2. Extraia os arquivos em uma pasta local.
+3. Clique com o botão direito em `OtimizacaoTI_V4_PLUS.bat`.
+4. Selecione **Executar como administrador**.
+5. Escolha a opção desejada no menu principal.
+6. Consulte o log gerado ao final da execução.
+
+> Algumas rotinas exigem privilégios administrativos e podem solicitar confirmação adicional antes de alterar componentes sensíveis do sistema.
 
-# \- rede,
+## Menu principal
+
+| Opção | Função |
+|---|---|
+| `1` | Limpeza profunda do Windows |
+| `2` | Otimização de desempenho máximo |
+| `3` | Resolver problema de rede |
+| `4` | Resolver problema de impressora |
+| `5` | Remover recursos de IA do Windows |
+| `6` | Apps clássicos do Windows |
+| `7` | Diagnóstico completo do sistema |
+| `8` | Manutenção rápida completa |
+| `9` | Manutenção completa avançada |
+| `I` | Inventário LIVE |
+| `T` | Ferramentas portáteis |
+| `U` | Sessões de usuário |
+| `M` | Alterar modo de execução |
+| `0` | Sair |
+
+## Modos de execução
+
+| Modo | Descrição |
+|---|---|
+| `COMPLETO` | Executa o fluxo normal das rotinas selecionadas. |
+| `SEGURO` | Preserva um comportamento mais conservador em operações sensíveis. |
+| `REMOTO` | Evita comandos que podem derrubar conectividade remota. |
+
+O modo **REMOTO** é recomendado quando a máquina está sendo acessada por RDP, ferramenta de suporte remoto, VPN ou qualquer canal que possa ser afetado por reset de rede.
+
+## Fluxo de inicialização
+
+Ao iniciar, o orquestrador executa as seguintes etapas:
+
+1. Valida privilégio administrativo.
+2. Solicita elevação via UAC, se necessário.
+3. Cria pastas base.
+4. Cria arquivo de log da sessão.
+5. Valida lock de execução.
+6. Detecta lock ativo, antigo ou corrompido.
+7. Solicita confirmação para sobrescrever lock ativo.
+8. Remove lock antigo ou inválido.
+9. Registra novo lock com PID e timestamp.
+10. Inicia o menu principal.
 
-# \- impressao,
+## Segurança operacional
 
-# \- governanca de recursos de IA do Windows,
+A solução adota alguns princípios para reduzir risco durante a execução:
 
-# \- suporte operacional com ferramentas portateis.
+- execução com privilégio administrativo controlado;
+- lock de execução para evitar concorrência;
+- logs centralizados;
+- confirmações fortes para ações sensíveis;
+- separação entre funções core e ferramentas externas;
+- modo remoto para evitar perda de conectividade;
+- *dry-run* em ações de maior impacto;
+- contagem separada de avisos e erros;
+- wrappers para comandos idempotentes.
 
-# 
+### Confirmações fortes
 
-# A versao atual e a \*\*V4.1 PLUS\*\*, com hardening de seguranca, dry-run no modulo de IA e organizacao de ferramentas externas.
+Algumas ações exigem digitação de texto exato antes da execução, como:
 
-# 
+- `ABRIR DISM++`
+- `LOGOFF FORCADO`
+
+Essa abordagem reduz o risco de execução acidental em operações críticas.
+
+## Logs
+
+Todos os logs são centralizados em:
 
-# \## Estrutura do projeto
+```text
+%ProgramData%\OtimizacaoTI\Logs
+```
 
-# \- `OtimizacaoTI\_V4\_PLUS.bat`: orquestrador principal.
+Cada execução gera um arquivo único por timestamp.
 
-# \- `modules/OtimizacaoTI\_AI\_Local.ps1`: modulo de IA local com dry-run e trilha de acoes.
+O resumo final inclui:
 
-# \- `modules/OtimizacaoTI\_ClassicApps.ps1`: modulo de apps classicos.
+- total de avisos;
+- total de erros;
+- necessidade de reinício;
+- status geral da execução.
 
-# \- `payloads/ClassicApps/`: payloads locais para apps classicos (necessario somente para opcoes de instalacao classica do Modulo 6).
+## Idempotência e contagem de avisos
 
-# \- `tools/portable/`: ferramentas externas opcionais.
+A versão **V4.1 PLUS** separa comandos tolerantes a falhas esperadas por meio de wrappers dedicados:
 
-# &nbsp; - `CrystalDiskInfo/`
+- `:run_soft`
+- `:ps_soft`
 
-# &nbsp; - `TreeSizeFree/`
+Com isso, retornos esperados, como tentativa de encerrar processo inexistente, não poluem indicadores de erro real.
 
-# &nbsp; - `DismPP/`
+## Módulo 1: Limpeza profunda
 
-# \- `tools/inventario/`: modulo de Inventario LIVE (painel web local).
+Executa rotinas de limpeza do sistema, cache, temporários e componentes do Windows.
 
-# \- `docs/`: documentacao tecnica.
+Principais ações:
 
-# 
+- limpeza de `%TEMP%`, `%TMP%` e `Windows\Temp`;
+- limpeza multiusuário de caches;
+- limpeza de cache de navegadores;
+- limpeza de Windows Update;
+- limpeza de Delivery Optimization;
+- limpeza de WER e minidumps antigos;
+- limpeza de thumbnail cache e icon cache;
+- limpeza da lixeira com confirmação;
+- execução de `DISM /StartComponentCleanup`;
+- execução de `ipconfig /flushdns`;
+- comparativo de espaço antes e depois.
 
-# \## Principios operacionais
+## Módulo 2: Otimização
 
-# 1\. Execucao com privilegio administrativo.
+Executa rotinas voltadas a desempenho, integridade e estabilidade.
 
-# 2\. Lock de execucao para evitar concorrencia.
+Principais ações:
 
-# 3\. Log centralizado em `%ProgramData%\\\\OtimizacaoTI\\\\Logs`.
+- cria e ativa o plano `Desempenho Máximo`;
+- ajusta políticas de energia;
+- executa `DISM /RestoreHealth`;
+- executa `SFC /scannow`;
+- executa `Optimize-Volume`;
+- executa `gpupdate /force`;
+- realiza `flushdns` final.
 
-# 4\. Confirmacao forte para acoes sensiveis.
+## Módulo 3: Rede
 
-# 5\. Separacao entre operacoes core e ferramentas externas.
+Executa diagnóstico e correções de rede.
 
-# 
+Principais ações:
 
-# \## Fluxo de inicializacao
+- flush e registro de DNS;
+- release e renew de IP, exceto em modo remoto;
+- limpeza de ARP;
+- limpeza de destination cache;
+- reset TCP/IP e Winsock, exceto em modo remoto;
+- reset WinHTTP proxy;
+- testes de conectividade.
 
-# 1\. O script valida privilegio admin.
+## Módulo 4: Impressora
 
-# 2\. Se necessario, eleva via UAC.
+Executa manutenção do spooler e diagnóstico de impressão.
 
-# 3\. Cria pastas base e log.
+Principais ações:
 
-# 4\. Valida lock ativo/stale:
+- inventário de impressoras;
+- limpeza de jobs travados;
+- reset do spooler;
+- limpeza de `spool\PRINTERS`;
+- inicialização de serviços relacionados;
+- validação de `spoolsv.exe`;
+- relatório final.
 
-# &nbsp; - lock ativo: solicita confirmacao para override,
+## Módulo 5: IA do Windows
 
-# &nbsp; - lock antigo/corrompido: remove automaticamente.
+Executa diagnóstico, desativação, bloqueio, remoção e reversão de políticas relacionadas a recursos de IA do Windows.
 
-# 5\. Registra lock com PID e timestamp.
+O módulo possui proteções adicionais na versão **V4.1 PLUS**:
 
-# 6\. Inicia log da sessao.
+- *dry-run* completo;
+- confirmação forte;
+- *allowlist*;
+- ações profundas bloqueadas por padrão;
+- trilha técnica de planejamento e execução;
+- tentativa de backup de registro;
+- tentativa de ponto de restauração.
 
-# 
+> Recomenda-se executar o *dry-run* antes de qualquer remoção ou alteração profunda.
 
-# \## Menu principal
+## Módulo 6: Apps clássicos
 
-# \- `\[1]` Limpeza profunda do Windows
+Executa rotinas relacionadas a aplicativos clássicos do Windows.
 
-# \- `\[2]` Otimizacao de desempenho maximo
+Recursos:
 
-# \- `\[3]` Resolver problema de rede
+- habilitação do Photo Viewer clássico;
+- instalação ou registro de payloads locais de Paint, Snipping Tool e Notepad;
+- tentativa de instalação do Photos Legacy via `winget`.
 
-# \- `\[4]` Resolver problema de impressora
+Observação:
 
-# \- `\[5]` Remover recursos de IA do Windows
+- Se o objetivo for manter apenas manutenção e diagnóstico, sem instalação de apps clássicos, este módulo pode ser removido junto com `payloads/ClassicApps`.
+- No estado atual do projeto, `payloads/ClassicApps` é utilizado pelo menu `6`.
 
-# \- `\[6]` Apps classicos do Windows
+## Menu T: Ferramentas portáteis
 
-# \- `\[7]` Diagnostico completo do sistema
+Abre ferramentas externas opcionais:
 
-# \- `\[8]` Manutencao rapida completa
+- `CrystalDiskInfoPortable.exe`;
+- `TreeSizeFree.exe`;
+- `Dism++`.
 
-# \- `\[9]` Manutencao completa avancada
+O Dism++ exige confirmação forte antes de abrir.
 
-# \- `\[I]` Inventario LIVE
+## Menu I: Inventário LIVE
 
-# \- `\[T]` Ferramentas portateis
+Inicia painel local em tempo real para inventário e ações administrativas.
 
-# \- `\[U]` Sessoes de usuario
+Módulo executado:
 
-# \- `\[M]` Alterar modo de execucao
+```text
+tools/inventario/Inventario-Corporativo-N3-LIVE-V4.ps1
+```
 
-# \- `\[0]` Sair
+Pasta dedicada de saída e logs:
 
-# 
+```text
+Inventario Log
+```
 
-# \## Modos de execucao
+Essa pasta é separada do log técnico principal.
 
-# \- `COMPLETO`: executa todo o fluxo normal.
+## Menu U: Sessões de usuário
 
-# \- `SEGURO`: preserva fluxo conservador para operacoes sensiveis (em especial IA profunda).
+Permite gerenciar sessões de usuário locais.
 
-# \- `REMOTO`: evita comandos que derrubam conectividade remota.
+Recursos:
 
-# 
+- lista sessões usando `quser`;
+- força logoff de outros usuários com confirmação forte;
+- preserva a sessão atual.
 
-# \## Modulo 1 - Limpeza profunda
+Confirmação exigida:
 
-# Funcoes principais:
+```text
+LOGOFF FORCADO
+```
 
-# \- limpeza de `%TEMP%`, `%TMP%`, `Windows\\\\Temp`;
+## Boas práticas de uso
 
-# \- limpeza multiusuario de caches temporarios e crash dumps;
+1. Execute sempre como administrador.
+2. Use o modo **REMOTO** quando estiver conectado remotamente.
+3. Rode o *dry-run* no módulo de IA antes de remoções.
+4. Leia as confirmações antes de prosseguir.
+5. Valide o log ao final da operação.
+6. Reinicie o computador quando o resumo final indicar necessidade.
+7. Evite executar múltiplas instâncias ao mesmo tempo.
+8. Use ferramentas externas, como Dism++, apenas com análise técnica.
 
-# \- limpeza de cache de navegadores multi-perfil;
+## Recomendações para publicação no GitHub
 
-# \- limpeza de caches de Windows Update e Delivery Optimization;
+Antes de publicar, revise:
 
-# \- limpeza de WER/minidumps antigos;
+- dados pessoais em comentários ou logs;
+- arquivos temporários;
+- executáveis de terceiros dentro de `tools/portable`;
+- payloads redistribuíveis em `payloads/ClassicApps`;
+- licença de uso;
+- permissões de distribuição de ferramentas externas;
+- prints, logs ou evidências que possam conter nomes de máquina, domínio, IPs internos ou usuários.
 
-# \- limpeza de thumbnail/icon cache;
+## Aviso técnico
 
-# \- limpeza de lixeira (confirmacao);
+Este projeto executa comandos administrativos no Windows. Algumas ações podem alterar configurações do sistema, limpar caches, reiniciar serviços, remover políticas, resetar rede ou exigir reinicialização.
 
-# \- `DISM /StartComponentCleanup`;
+Use em ambiente controlado, revise os logs e mantenha backups quando necessário.
 
-# \- `ipconfig /flushdns`;
+## Roadmap sugerido
 
-# \- comparativo de espaco em disco antes/depois.
+- [ ] Criar documentação individual por módulo.
+- [ ] Adicionar exemplos de execução com prints.
+- [ ] Criar changelog formal.
+- [ ] Adicionar seção de troubleshooting.
+- [ ] Criar assinatura/hash dos arquivos principais.
+- [ ] Criar modo de exportação de relatório consolidado.
+- [ ] Adicionar testes básicos de validação dos módulos PowerShell.
+- [ ] Separar dependências opcionais em pacote externo.
 
-# 
+## Licença
 
-# \## Modulo 2 - Otimizacao
+Defina a licença antes de publicar este projeto em repositório público.
 
-# Funcoes principais:
+Sugestões comuns:
 
-# \- cria/ativa plano `Desempenho Maximo`;
+- MIT, para uso aberto e permissivo;
+- Apache 2.0, para uso aberto com cláusulas adicionais;
+- licença privada, caso o projeto seja destinado apenas a uso interno.
 
-# \- ajusta politicas de energia em AC;
+## Autor
 
-# \- `DISM /RestoreHealth`;
+Desenvolvido por **Felipe Brasilio**.
 
-# \- `SFC /scannow`;
+---
 
-# \- `Optimize-Volume` em unidades fixas;
-
-# \- `gpupdate /force`;
-
-# \- `flushdns` final.
-
-# 
-
-# \## Modulo 3 - Rede
-
-# Funcoes principais:
-
-# \- DNS flush/register;
-
-# \- release/renew de IP (exceto modo remoto);
-
-# \- limpeza ARP e destination cache;
-
-# \- reset TCP/IP e Winsock (exceto modo remoto);
-
-# \- reset WinHTTP proxy;
-
-# \- testes de conectividade (loopback, IP publico, DNS e HTTPS).
-
-# 
-
-# \## Modulo 4 - Impressora
-
-# Funcoes principais:
-
-# \- inventario de impressoras;
-
-# \- limpeza de jobs travados;
-
-# \- reset do spooler e pasta `spool\\\\PRINTERS`;
-
-# \- inicializacao de servicos relacionados;
-
-# \- validacao `spoolsv.exe` com SFC;
-
-# \- relatorio final.
-
-# 
-
-# \## Modulo 5 - IA do Windows (hardening V4.1)
-
-# Submenu:
-
-# \- diagnostico,
-
-# \- desativacao por politicas,
-
-# \- remocao Appx/Recall,
-
-# \- remocao profunda (guardada),
-
-# \- bloqueio de reinstalacao,
-
-# \- remocao completa,
-
-# \- reversao de politicas,
-
-# \- dry-run completo.
-
-# 
-
-# \### Controles de seguranca
-
-# \- \*\*dry-run\*\*: gera relatorio sem alterar o sistema.
-
-# \- \*\*confirmacao forte\*\*: texto exato para operacoes destrutivas.
-
-# \- \*\*allowlist\*\*: filtros positivos para Appx/features/tasks/CBS.
-
-# \- \*\*acoes profundas bloqueadas por padrao\*\*: requer `-UnsafeDeepActions`.
-
-# \- \*\*edicao JSON por parse estrutural\*\*: sem replace global cego.
-
-# 
-
-# \### Saida tecnica
-
-# \- trilha de planejamento e execucao por item (WouldDo, Done, Failed, Skipped);
-
-# \- backups de registro e tentativa de ponto de restauracao.
-
-# 
-
-# \## Modulo 6 - Apps classicos
-
-# \- habilita Photo Viewer classico;
-
-# \- instala/registre payloads locais de Paint/Snipping/Notepad;
-
-# \- tentativa de Photos Legacy via winget.
-
-# 
-
-# Observacao de dependencia:
-
-# \- se o objetivo for manter apenas manutencao/diagnostico e nao usar instalacao de apps classicos, este modulo pode ser removido junto com `payloads/ClassicApps`.
-
-# \- no estado atual do projeto, `payloads/ClassicApps` e utilizado pelo menu `\[6]`.
-
-# 
-
-# \## Menu T - Ferramentas portateis
-
-# \- abre `CrystalDiskInfoPortable.exe`;
-
-# \- abre `TreeSizeFree.exe`;
-
-# \- abre `Dism++` com confirmacao forte (`ABRIR DISM++`).
-
-# 
-
-# Observacao tecnica:
-
-# \- Dism++ permanece \*\*manual assistido\*\*. O script nao automatiza cliques nem rotinas internas do executavel.
-
-# \- Isso reduz risco operacional e melhora previsibilidade.
-
-# 
-
-# \## Menu I - Inventario LIVE
-
-# \- inicia painel local em tempo real para inventario e acoes administrativas;
-
-# \- executa modulo: `tools/inventario/Inventario-Corporativo-N3-LIVE-V4.ps1`;
-
-# \- usa pasta dedicada de saida/logs: `Inventario Log` (separada de `Log Tecnico`).
-
-# 
-
-# \### Recursos principais do Inventario LIVE
-
-# \- coleta local/remota de sistema, hardware, armazenamento, rede, software, usuarios, seguranca, patches, servicos e eventos;
-
-# \- diagnostico remoto com normalizacao de alvo (hostname/IP/share);
-
-# \- validacao de conectividade WinRM + portas 5985/5986 + mensagens orientativas;
-
-# \- fallback com ajuste automatico de TrustedHosts para cenarios por IP quando aplicavel;
-
-# \- painel com progresso e historico de coleta/acoes.
-
-# 
-
-# \### Exportacao de resultado
-
-# \- `Exportar JSON`: gera arquivo completo;
-
-# \- `Exportar TXT Seletivo`: salva arquivo `.txt` simples contendo apenas as secoes escolhidas (marcacao por lista de opcoes).
-
-# 
-
-# \## Menu U - Sessoes de usuario
-
-# \- lista sessoes via `quser`;
-
-# \- forca logoff de outros usuarios com confirmacao forte (`LOGOFF FORCADO`);
-
-# \- preserva sessao atual.
-
-# 
-
-# \## Contagem de avisos e idempotencia
-
-# A V4.1 separa comandos idempotentes com wrappers dedicados:
-
-# \- `:run\_soft`
-
-# \- `:ps\_soft`
-
-# 
-
-# Com isso, retornos esperados (ex.: `taskkill` sem processo ativo) nao poluem indicadores de erro real.
-
-# 
-
-# \## Logs
-
-# \- caminho: `%ProgramData%\\\\OtimizacaoTI\\\\Logs`.
-
-# \- cada execucao gera arquivo unico por timestamp.
-
-# \- resumo final inclui:
-
-# &nbsp; - total de avisos,
-
-# &nbsp; - total de erros,
-
-# &nbsp; - necessidade de reinicio.
-
-# 
-
-# \## Organizacao para manutencao manual
-
-# \- alteracoes do core: `OtimizacaoTI\_V4\_PLUS.bat` e `modules/\*.ps1`.
-
-# \- ferramentas externas: `tools/portable/\*`.
-
-# \- sem dependencia de scripts legados externos.
-
-# 
-
-# \## Boas praticas de uso
-
-# 1\. Executar sempre como administrador.
-
-# 2\. Rodar dry-run no modulo de IA antes de remocoes.
-
-# 3\. Usar Dism++ de forma manual e consciente.
-
-# 4\. Validar logs ao final de cada operacao.
-
-# 
-
+**OTIMIZAÇÃO TI V4.1 PLUS**  
+Manutenção, diagnóstico e suporte Windows com mais padronização, rastreabilidade e controle operacional.
