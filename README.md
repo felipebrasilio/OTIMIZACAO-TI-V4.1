@@ -28,6 +28,13 @@ O projeto foi desenvolvido para apoiar operações de TI com foco em:
 
 A versão **V4.1 PLUS** adiciona melhorias de segurança, controle de concorrência, logs centralizados, modo *dry-run* para ações sensíveis e melhor organização dos módulos externos.
 
+### Atualização recente
+
+- As opções do menu principal passam a executar na mesma janela, evitando a abertura repetida de janelas do `cmd`.
+- A opção `6` foi substituída por **Otimizar inicialização**.
+- O módulo antigo de apps clássicos e a pasta `payloads/ClassicApps` foram removidos.
+- A limpeza profunda agora executa a Limpeza de Disco do Windows com as categorias disponíveis marcadas automaticamente.
+
 ## Objetivo do projeto
 
 O objetivo do **OTIMIZAÇÃO TI** é oferecer um orquestrador local, portátil e organizado para técnicos de suporte, analistas de infraestrutura e administradores que precisam executar rotinas repetitivas com mais padronização, rastreabilidade e segurança operacional.
@@ -46,6 +53,7 @@ Ele não substitui a análise técnica humana. O projeto funciona como um painel
 - Limpeza de thumbnail cache e icon cache.
 - Limpeza de lixeira com confirmação.
 - Execução de `DISM /StartComponentCleanup`.
+- Execução do `cleanmgr /sagerun` com todas as categorias disponíveis marcadas automaticamente.
 - Execução de `DISM /RestoreHealth`.
 - Execução de `SFC /scannow`.
 - Otimização de volumes fixos com `Optimize-Volume`.
@@ -58,6 +66,16 @@ Ele não substitui a análise técnica humana. O projeto funciona como um painel
 - Ajustes de energia para operação em AC.
 - Rotinas de integridade e otimização do sistema.
 - Flush DNS ao final do fluxo.
+
+### Inicialização
+
+- Ajuste de efeitos visuais para melhor desempenho.
+- Configuração do boot com o máximo de processadores lógicos detectados.
+- Ativação de Fast Startup, quando disponível.
+- Remoção do atraso de inicialização de apps.
+- Remoção de entradas `Run`/`RunOnce` com backup.
+- Movimentação de atalhos das pastas Startup para backup.
+- Inventário de tarefas agendadas de inicialização para revisão técnica.
 
 ### Rede
 
@@ -140,10 +158,7 @@ O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferr
 .
 ├── OtimizacaoTI_V4_PLUS.bat
 ├── modules/
-│   ├── OtimizacaoTI_AI_Local.ps1
-│   └── OtimizacaoTI_ClassicApps.ps1
-├── payloads/
-│   └── ClassicApps/
+│   └── OtimizacaoTI_AI_Local.ps1
 ├── tools/
 │   ├── portable/
 │   │   ├── CrystalDiskInfo/
@@ -161,8 +176,6 @@ O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferr
 |---|---|
 | `OtimizacaoTI_V4_PLUS.bat` | Orquestrador principal do sistema. |
 | `modules/OtimizacaoTI_AI_Local.ps1` | Módulo de IA local com *dry-run*, trilha de ações e controles de segurança. |
-| `modules/OtimizacaoTI_ClassicApps.ps1` | Módulo para apps clássicos do Windows. |
-| `payloads/ClassicApps/` | Payloads locais usados pelo módulo de apps clássicos. |
 | `tools/portable/` | Ferramentas externas opcionais. |
 | `tools/inventario/` | Módulo de Inventário LIVE com painel local. |
 | `docs/` | Documentação técnica do projeto. |
@@ -195,7 +208,7 @@ O **Dism++** permanece em modo **manual assistido**. O script apenas abre a ferr
 | `3` | Resolver problema de rede |
 | `4` | Resolver problema de impressora |
 | `5` | Remover recursos de IA do Windows |
-| `6` | Apps clássicos do Windows |
+| `6` | Otimizar inicialização |
 | `7` | Diagnóstico completo do sistema |
 | `8` | Manutenção rápida completa |
 | `9` | Manutenção completa avançada |
@@ -230,6 +243,8 @@ Ao iniciar, o orquestrador executa as seguintes etapas:
 9. Registra novo lock com PID e timestamp.
 10. Inicia o menu principal.
 
+As opções principais são executadas na própria janela do orquestrador. Isso evita a criação de múltiplas janelas `cmd` durante a seleção de opções.
+
 ## Segurança operacional
 
 A solução adota alguns princípios para reduzir risco durante a execução:
@@ -250,6 +265,7 @@ Algumas ações exigem digitação de texto exato antes da execução, como:
 
 - `ABRIR DISM++`
 - `LOGOFF FORCADO`
+- `OTIMIZAR INICIALIZACAO`
 
 Essa abordagem reduz o risco de execução acidental em operações críticas.
 
@@ -258,10 +274,16 @@ Essa abordagem reduz o risco de execução acidental em operações críticas.
 Todos os logs são centralizados em:
 
 ```text
-%ProgramData%\OtimizacaoTI\Logs
+Otimização_Windows\Log Tecnico
 ```
 
 Cada execução gera um arquivo único por timestamp.
+
+Arquivos de lock, backups de inicialização e dados operacionais persistentes são mantidos em:
+
+```text
+%ProgramData%\OtimizacaoTI
+```
 
 O resumo final inclui:
 
@@ -294,6 +316,7 @@ Principais ações:
 - limpeza de thumbnail cache e icon cache;
 - limpeza da lixeira com confirmação;
 - execução de `DISM /StartComponentCleanup`;
+- execução de `cleanmgr /sagerun` com seleção automática das categorias disponíveis;
 - execução de `ipconfig /flushdns`;
 - comparativo de espaço antes e depois.
 
@@ -355,20 +378,25 @@ O módulo possui proteções adicionais na versão **V4.1 PLUS**:
 
 > Recomenda-se executar o *dry-run* antes de qualquer remoção ou alteração profunda.
 
-## Módulo 6: Apps clássicos
+## Módulo 6: Otimizar inicialização
 
-Executa rotinas relacionadas a aplicativos clássicos do Windows.
+Executa ajustes para reduzir carga de inicialização e deixar o Windows mais leve.
 
 Recursos:
 
-- habilitação do Photo Viewer clássico;
-- instalação ou registro de payloads locais de Paint, Snipping Tool e Notepad;
-- tentativa de instalação do Photos Legacy via `winget`.
+- ajuste de efeitos visuais para melhor desempenho;
+- configuração de boot com o máximo de processadores lógicos detectados;
+- ativação de Fast Startup quando disponível;
+- remoção do atraso de inicialização de apps;
+- remoção de entradas `Run`/`RunOnce` com backup;
+- movimentação de atalhos das pastas Startup para backup;
+- inventário de tarefas agendadas de inicialização.
 
 Observação:
 
-- Se o objetivo for manter apenas manutenção e diagnóstico, sem instalação de apps clássicos, este módulo pode ser removido junto com `payloads/ClassicApps`.
-- No estado atual do projeto, `payloads/ClassicApps` é utilizado pelo menu `6`.
+- O módulo antigo de apps clássicos e `payloads/ClassicApps` foram removidos.
+- Backups ficam em `%ProgramData%\OtimizacaoTI\StartupBackup`.
+- A execução exige a confirmação exata `OTIMIZAR INICIALIZACAO`.
 
 ## Menu T: Ferramentas portáteis
 

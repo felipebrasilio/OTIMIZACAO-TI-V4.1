@@ -8,15 +8,20 @@ Eu desenvolvi a solucao **OTIMIZACAO TI** para padronizar manutencao tecnica de 
 - rede,
 - impressao,
 - governanca de recursos de IA do Windows,
+- otimizacao de inicializacao,
 - suporte operacional com ferramentas portateis.
 
 A versao atual e a **V4.1 PLUS**, com hardening de seguranca, dry-run no modulo de IA e organizacao de ferramentas externas.
 
+## Atualizacao operacional recente
+- as opcoes principais do menu executam na mesma janela do orquestrador, sem abrir novas janelas `cmd` em cascata;
+- a opcao `[6]` agora e **Otimizar inicializacao**;
+- o modulo antigo de apps classicos e `payloads/ClassicApps` foram removidos;
+- a limpeza profunda executa `cleanmgr /sagerun` com as categorias disponiveis marcadas automaticamente.
+
 ## Estrutura do projeto
 - `OtimizacaoTI_V4_PLUS.bat`: orquestrador principal.
 - `modules/OtimizacaoTI_AI_Local.ps1`: modulo de IA local com dry-run e trilha de acoes.
-- `modules/OtimizacaoTI_ClassicApps.ps1`: modulo de apps classicos.
-- `payloads/ClassicApps/`: payloads locais para apps classicos (necessario somente para opcoes de instalacao classica do Modulo 6).
 - `tools/portable/`: ferramentas externas opcionais.
   - `CrystalDiskInfo/`
   - `TreeSizeFree/`
@@ -27,7 +32,7 @@ A versao atual e a **V4.1 PLUS**, com hardening de seguranca, dry-run no modulo 
 ## Principios operacionais
 1. Execucao com privilegio administrativo.
 2. Lock de execucao para evitar concorrencia.
-3. Log centralizado em `%ProgramData%\\OtimizacaoTI\\Logs`.
+3. Log tecnico centralizado em `Otimização_Windows\\Log Tecnico`.
 4. Confirmacao forte para acoes sensiveis.
 5. Separacao entre operacoes core e ferramentas externas.
 
@@ -40,6 +45,7 @@ A versao atual e a **V4.1 PLUS**, com hardening de seguranca, dry-run no modulo 
   - lock antigo/corrompido: remove automaticamente.
 5. Registra lock com PID e timestamp.
 6. Inicia log da sessao.
+7. Executa opcoes principais na janela atual, evitando criacao repetida de `cmd`.
 
 ## Menu principal
 - `[1]` Limpeza profunda do Windows
@@ -47,7 +53,7 @@ A versao atual e a **V4.1 PLUS**, com hardening de seguranca, dry-run no modulo 
 - `[3]` Resolver problema de rede
 - `[4]` Resolver problema de impressora
 - `[5]` Remover recursos de IA do Windows
-- `[6]` Apps classicos do Windows
+- `[6]` Otimizar inicializacao
 - `[7]` Diagnostico completo do sistema
 - `[8]` Manutencao rapida completa
 - `[9]` Manutencao completa avancada
@@ -72,6 +78,7 @@ Funcoes principais:
 - limpeza de thumbnail/icon cache;
 - limpeza de lixeira (confirmacao);
 - `DISM /StartComponentCleanup`;
+- `cleanmgr /sagerun` com todas as categorias disponiveis marcadas automaticamente;
 - `ipconfig /flushdns`;
 - comparativo de espaco em disco antes/depois.
 
@@ -125,14 +132,19 @@ Submenu:
 - trilha de planejamento e execucao por item (WouldDo, Done, Failed, Skipped);
 - backups de registro e tentativa de ponto de restauracao.
 
-## Modulo 6 - Apps classicos
-- habilita Photo Viewer classico;
-- instala/registre payloads locais de Paint/Snipping/Notepad;
-- tentativa de Photos Legacy via winget.
+## Modulo 6 - Otimizar inicializacao
+- ajusta efeitos visuais para melhor desempenho no usuario atual;
+- configura o boot para usar o numero maximo de processadores logicos detectados;
+- ativa Fast Startup quando disponivel;
+- remove atraso de inicializacao de apps;
+- remove entradas de inicializacao `Run`/`RunOnce` com backup;
+- move atalhos das pastas Startup para backup;
+- registra inventario de tarefas agendadas de inicializacao para revisao.
 
 Observacao de dependencia:
-- se o objetivo for manter apenas manutencao/diagnostico e nao usar instalacao de apps classicos, este modulo pode ser removido junto com `payloads/ClassicApps`.
-- no estado atual do projeto, `payloads/ClassicApps` e utilizado pelo menu `[6]`.
+- o modulo antigo de apps classicos e a pasta `payloads/ClassicApps` foram removidos.
+- backups da inicializacao ficam em `%ProgramData%\OtimizacaoTI\StartupBackup`.
+- a execucao exige confirmacao exata: `OTIMIZAR INICIALIZACAO`.
 
 ## Menu T - Ferramentas portateis
 - abre `CrystalDiskInfoPortable.exe`;
@@ -172,7 +184,8 @@ A V4.1 separa comandos idempotentes com wrappers dedicados:
 Com isso, retornos esperados (ex.: `taskkill` sem processo ativo) nao poluem indicadores de erro real.
 
 ## Logs
-- caminho: `%ProgramData%\\OtimizacaoTI\\Logs`.
+- caminho dos logs tecnicos: `Otimização_Windows\\Log Tecnico`.
+- caminho de locks/backups/dados persistentes: `%ProgramData%\\OtimizacaoTI`.
 - cada execucao gera arquivo unico por timestamp.
 - resumo final inclui:
   - total de avisos,

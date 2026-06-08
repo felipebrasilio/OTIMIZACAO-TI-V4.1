@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Third-party components and portable tools
+-----------------------------------------
+
+This license applies to the OTIMIZACAO TI project source code and project
+documentation authored for this repository.
+
+Portable third-party tools included or referenced in the project, such as
+CrystalDiskInfo, TreeSize Free, Dism++, Revo Uninstaller Pro, and any bundled
+runtime files, remain subject to their own licenses, terms, and copyright
+notices. Review the license files distributed with each third-party component
+before redistributing or using them in commercial, corporate, or public
+packages.

@@ -7,7 +7,7 @@ mode con: cols=120 lines=38
 
 REM ============================================================
 REM OTIMIZACAO TI - V4 PLUS
-REM Limpeza | Otimizacao | Rede | Impressora | IA Windows | Apps Classicos
+REM Limpeza | Otimizacao | Rede | Impressora | IA Windows | Inicializacao
 REM Mantem as funcoes da V3 e adiciona melhorias operacionais.
 REM ============================================================
 
@@ -17,7 +17,6 @@ set "BASE_DIR=%ProgramData%\OtimizacaoTI"
 set "LOG_DIR=%PROJECT_DIR%Log Tecnico"
 set "MODULE_DIR=%~dp0modules"
 set "AI_MODULE=%MODULE_DIR%\OtimizacaoTI_AI_Local.ps1"
-set "CLASSIC_MODULE=%MODULE_DIR%\OtimizacaoTI_ClassicApps.ps1"
 set "LOCK_FILE=%BASE_DIR%\otimizacao_ti.lock"
 set "LOCK_MAX_HOURS=12"
 set "TOOLS_DIR=%~dp0tools\portable"
@@ -99,6 +98,7 @@ if /I "%WORKER_TASK%"=="diagnostico" goto :diagnostico
 if /I "%WORKER_TASK%"=="tudo_rapido" goto :tudo_rapido
 if /I "%WORKER_TASK%"=="tudo_completo" goto :tudo_completo
 if /I "%WORKER_TASK%"=="inventario_live" goto :inventario_live
+if /I "%WORKER_TASK%"=="otimizar_inicializacao" goto :otimizar_inicializacao
 call :error "Worker task invalida: %WORKER_TASK%"
 goto :worker_end
 
@@ -113,7 +113,7 @@ for /f "usebackq tokens=1,* delims==" %%A in ("%LOCK_FILE%") do (
 if not defined LOCK_PID goto :lock_stale
 
 set "LOCK_ALIVE=0"
-for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='%LOCK_PID%'; if($p -match '^\d+$' -and (Get-Process -Id [int]$p -ErrorAction SilentlyContinue)){ '1' } else { '0' }"') do set "LOCK_ALIVE=%%I"
+for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='%LOCK_PID%'; if($p -match '^\d+$' -and (Get-Process -Id ([int]$p) -ErrorAction SilentlyContinue)){ '1' } else { '0' }"') do set "LOCK_ALIVE=%%I"
 
 set "LOCK_EXPIRED=1"
 if defined LOCK_TS (
@@ -138,7 +138,7 @@ exit /b 0
 
 :write_lock
 set "CURRENT_PID="
-for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$pp=(Get-CimInstance Win32_Process -Filter \"ProcessId=$PID\").ParentProcessId; if(-not $pp){ $pp=$PID }; [string]$pp"') do set "CURRENT_PID=%%I"
+for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$self=Get-CimInstance Win32_Process -Filter ('ProcessId=' + $PID); $pp=$self.ParentProcessId; if(-not $pp){ $pp=$PID }; [string]$pp"') do set "CURRENT_PID=%%I"
 if not defined CURRENT_PID set "CURRENT_PID=0"
 for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Date -Format s"') do set "CURRENT_TS=%%I"
 (
@@ -153,7 +153,7 @@ cls
 echo.
 echo ========================================================================================================================
 echo                                             OTIMIZACAO TI V4 PLUS
-echo                   LIMPEZA ^| DESEMPENHO MAXIMO ^| REDE ^| IMPRESSORA ^| WINDOWS AI ^| APPS CLASSICOS
+echo                   LIMPEZA ^| DESEMPENHO MAXIMO ^| REDE ^| IMPRESSORA ^| WINDOWS AI ^| INICIALIZACAO
 echo ========================================================================================================================
 echo.
 echo Modo atual: %EXEC_MODE%
@@ -170,7 +170,7 @@ echo [2] OTIMIZACAO DE DESEMPENHO MAXIMO
 echo [3] RESOLVER PROBLEMA DE REDE
 echo [4] RESOLVER PROBLEMA DE IMPRESSORA
 echo [5] REMOVER RECURSOS DE IA DO WINDOWS
-echo [6] APPS CLASSICOS DO WINDOWS
+echo [6] OTIMIZAR INICIALIZACAO
 echo [7] DIAGNOSTICO COMPLETO DO SISTEMA
 echo [8] EXECUTAR MANUTENCAO RAPIDA COMPLETA
 echo [9] EXECUTAR MANUTENCAO COMPLETA AVANCADA
@@ -182,16 +182,16 @@ echo [0] SAIR
 echo.
 set /p OP=Digite a opcao: 
 
-if /I "%OP%"=="1" call :start_task limpeza & goto :menu
-if /I "%OP%"=="2" call :start_task otimizacao & goto :menu
+if /I "%OP%"=="1" goto :limpeza
+if /I "%OP%"=="2" goto :otimizacao
 if /I "%OP%"=="3" goto :rede
-if /I "%OP%"=="4" call :start_task impressora & goto :menu
+if /I "%OP%"=="4" goto :impressora
 if /I "%OP%"=="5" goto :ia_menu
-if /I "%OP%"=="6" goto :classic_menu
+if /I "%OP%"=="6" goto :otimizar_inicializacao
 if /I "%OP%"=="7" goto :diagnostico
-if /I "%OP%"=="8" call :start_task tudo_rapido & goto :menu
-if /I "%OP%"=="9" call :start_task tudo_completo & goto :menu
-if /I "%OP%"=="I" call :start_task inventario_live & goto :menu
+if /I "%OP%"=="8" goto :tudo_rapido
+if /I "%OP%"=="9" goto :tudo_completo
+if /I "%OP%"=="I" goto :inventario_live
 if /I "%OP%"=="T" goto :tools_menu
 if /I "%OP%"=="U" goto :users_menu
 if /I "%OP%"=="M" goto :modo
@@ -205,17 +205,13 @@ goto :menu
 :start_task
 call :task_lock_acquire "task_%~1"
 if errorlevel 1 (
-    call :warn "A tarefa '%~1' ja esta em execucao em outra janela. Solicita????o ignorada."
+    call :warn "A tarefa '%~1' ja esta em execucao. Solicitacao ignorada."
     exit /b 1
 )
-call :log "Enfileirando tarefa em paralelo: %~1"
-start "OTI-%~1" cmd /k ""%~f0" --task %~1 --heldlock task_%~1"
-if errorlevel 1 (
-    call :warn "Falha ao iniciar tarefa em paralelo: %~1"
-    call :task_lock_release "task_%~1"
-) else (
-    call :log "Tarefa iniciada em paralelo: %~1"
-)
+call :log "Executando tarefa na janela atual: %~1"
+set "WORKER_TASK=%~1"
+set "HELD_TASK_LOCK_NAME=task_%~1"
+goto :worker_dispatch
 exit /b 0
 
 :task_lock_acquire
@@ -233,7 +229,7 @@ if exist "%ACTIVE_TASK_LOCK_PATH%" (
     set "TASK_LOCK_STALE=0"
     if defined LOCK_OWNER_PID (
         set "TASK_LOCK_ALIVE=0"
-        for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='%LOCK_OWNER_PID%'; if($p -match '^\d+$' -and (Get-Process -Id [int]$p -ErrorAction SilentlyContinue)){ '1' } else { '0' }"') do set "TASK_LOCK_ALIVE=%%I"
+        for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='%LOCK_OWNER_PID%'; if($p -match '^\d+$' -and (Get-Process -Id ([int]$p) -ErrorAction SilentlyContinue)){ '1' } else { '0' }"') do set "TASK_LOCK_ALIVE=%%I"
         if not "%TASK_LOCK_ALIVE%"=="1" set "TASK_LOCK_STALE=1"
     ) else (
         set "TASK_LOCK_STALE=1"
@@ -250,7 +246,7 @@ if exist "%ACTIVE_TASK_LOCK_PATH%" (
 )
 mkdir "%ACTIVE_TASK_LOCK_PATH%" >nul 2>&1
 if errorlevel 1 exit /b 1
-for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$pp=(Get-CimInstance Win32_Process -Filter \"ProcessId=$PID\").ParentProcessId; if(-not $pp){ $pp=$PID }; [string]$pp"') do set "TASK_OWNER_PID=%%I"
+for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$self=Get-CimInstance Win32_Process -Filter ('ProcessId=' + $PID); $pp=$self.ParentProcessId; if(-not $pp){ $pp=$PID }; [string]$pp"') do set "TASK_OWNER_PID=%%I"
 if not defined TASK_OWNER_PID set "TASK_OWNER_PID=0"
 for /f %%I in ('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Date -Format s"') do set "TASK_OWNER_TS=%%I"
 (
@@ -403,7 +399,7 @@ call :ps "Espaco em disco antes da limpeza" "Get-PSDrive -PSProvider FileSystem 
 
 call :confirmar "Deseja fechar navegadores para liberar cache?"
 if /I "%CONFIRM_RESULT%"=="S" (
-    echo [1/12] Fechando processos de navegadores...
+    echo [1/13] Fechando processos de navegadores...
     call :run_soft "Fechar Chrome" "taskkill /f /im chrome.exe"
     call :run_soft "Fechar Edge" "taskkill /f /im msedge.exe"
     call :run_soft "Fechar Brave" "taskkill /f /im brave.exe"
@@ -414,16 +410,16 @@ if /I "%CONFIRM_RESULT%"=="S" (
     call :warn "Fechamento de navegadores ignorado pelo usuario"
 )
 
-echo [2/12] Limpando temporarios do Windows...
+echo [2/13] Limpando temporarios do Windows...
 call :ps "Limpar TEMP do Windows" "$paths=@($env:TEMP,$env:TMP,(Join-Path $env:windir 'Temp')); foreach($p in $paths){ if(Test-Path -LiteralPath $p){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue ^| ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue } } }"
 
-echo [3/12] Limpando temporarios de todos os usuarios...
+echo [3/13] Limpando temporarios de todos os usuarios...
 call :ps "Limpar TEMP dos usuarios" "$base=Join-Path $env:SystemDrive 'Users'; $skip=@('Public','Default','Default User','All Users'); Get-ChildItem -LiteralPath $base -Directory -Force -ErrorAction SilentlyContinue ^| Where-Object { $skip -notcontains $_.Name } ^| ForEach-Object { $u=$_; @('AppData\Local\Temp','AppData\Local\Microsoft\Windows\INetCache','AppData\Local\Microsoft\Windows\WebCache','AppData\Local\CrashDumps') ^| ForEach-Object { $p=Join-Path $u.FullName $_; if(Test-Path -LiteralPath $p){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue ^| ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue } } } }"
 
-echo [4/12] Limpando cache de todos os perfis de navegadores Chromium/Firefox...
+echo [4/13] Limpando cache de todos os perfis de navegadores Chromium/Firefox...
 call :ps "Limpar cache de navegadores multi-perfil" "$base=Join-Path $env:SystemDrive 'Users'; $skip=@('Public','Default','Default User','All Users'); $roots=@('AppData\Local\Google\Chrome\User Data','AppData\Local\Microsoft\Edge\User Data','AppData\Local\BraveSoftware\Brave-Browser\User Data','AppData\Local\Vivaldi\User Data','AppData\Roaming\Opera Software\Opera Stable'); $cacheNames=@('Cache','Code Cache','GPUCache','Service Worker\CacheStorage','DawnCache','ShaderCache','GrShaderCache'); Get-ChildItem -LiteralPath $base -Directory -Force -EA SilentlyContinue ^| Where-Object { $skip -notcontains $_.Name } ^| ForEach-Object { $u=$_; foreach($rootRel in $roots){ $root=Join-Path $u.FullName $rootRel; if(Test-Path $root){ Get-ChildItem $root -Directory -EA SilentlyContinue ^| ForEach-Object { $profile=$_; foreach($c in $cacheNames){ $p=Join-Path $profile.FullName $c; if(Test-Path $p){ Get-ChildItem $p -Force -EA SilentlyContinue ^| Remove-Item -Recurse -Force -EA SilentlyContinue } } } } }; $ff=Join-Path $u.FullName 'AppData\Local\Mozilla\Firefox\Profiles'; if(Test-Path $ff){ Get-ChildItem $ff -Directory -EA SilentlyContinue ^| ForEach-Object { foreach($folder in @('cache2','startupCache')){ $p=Join-Path $_.FullName $folder; if(Test-Path $p){ Get-ChildItem $p -Force -EA SilentlyContinue ^| Remove-Item -Recurse -Force -EA SilentlyContinue } } } }; $d3d=Join-Path $u.FullName 'AppData\Local\D3DSCache'; if(Test-Path $d3d){ Get-ChildItem $d3d -Force -EA SilentlyContinue ^| Remove-Item -Recurse -Force -EA SilentlyContinue } }"
 
-echo [5/12] Limpando cache do Windows Update...
+echo [5/13] Limpando cache do Windows Update...
 call :run "Parar Windows Update" "net stop wuauserv /y"
 call :run "Parar BITS" "net stop bits /y"
 call :run "Parar Delivery Optimization" "net stop dosvc /y"
@@ -437,30 +433,33 @@ call :run "Iniciar Delivery Optimization" "net start dosvc"
 call :run "Iniciar BITS" "net start bits"
 call :run "Iniciar Windows Update" "net start wuauserv"
 
-echo [6/12] Limpando relatorios de erro e dumps antigos...
+echo [6/13] Limpando relatorios de erro e dumps antigos...
 call :ps "Limpar WER e dumps" "$paths=@((Join-Path $env:ProgramData 'Microsoft\Windows\WER\ReportArchive'),(Join-Path $env:ProgramData 'Microsoft\Windows\WER\ReportQueue'),(Join-Path $env:windir 'Minidump'),(Join-Path $env:windir 'LiveKernelReports')); foreach($p in $paths){ if(Test-Path -LiteralPath $p){ Get-ChildItem -LiteralPath $p -Force -ErrorAction SilentlyContinue ^| Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-7) } ^| Remove-Item -Recurse -Force -EA SilentlyContinue } }"
 
-echo [7/12] Limpando miniaturas e caches graficos...
+echo [7/13] Limpando miniaturas e caches graficos...
 call :ps "Limpar thumbnails e icon cache" "$base=Join-Path $env:SystemDrive 'Users'; $skip=@('Public','Default','Default User','All Users'); Get-ChildItem -LiteralPath $base -Directory -Force -EA SilentlyContinue ^| Where-Object { $skip -notcontains $_.Name } ^| ForEach-Object { $exp=Join-Path $_.FullName 'AppData\Local\Microsoft\Windows\Explorer'; if(Test-Path $exp){ Get-ChildItem $exp -Force -EA SilentlyContinue -Include 'thumbcache_*.db','iconcache_*.db' ^| Remove-Item -Force -EA SilentlyContinue } }"
 
 call :confirmar "Deseja esvaziar a lixeira?"
 if /I "%CONFIRM_RESULT%"=="S" (
-    echo [8/12] Limpando lixeira...
+    echo [8/13] Limpando lixeira...
     call :ps "Limpar lixeira" "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
 ) else (
     call :warn "Limpeza da lixeira ignorada pelo usuario"
 )
 
-echo [9/12] Limpando componentes antigos do Windows...
+echo [9/13] Limpando componentes antigos do Windows...
 call :run_dism_single "DISM StartComponentCleanup" "dism /Online /Cleanup-Image /StartComponentCleanup"
 
-echo [10/12] Limpando cache DNS...
+echo [10/13] Executando Limpeza de Disco automatica com todos os itens marcados...
+call :ps "Cleanmgr automatico com todas as categorias" "$cleanmgr=Join-Path $env:windir 'System32\cleanmgr.exe'; if(Test-Path -LiteralPath $cleanmgr){ $flag='StateFlags0099'; $base='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches'; Get-ChildItem -LiteralPath $base -ErrorAction SilentlyContinue ^| ForEach-Object { New-ItemProperty -LiteralPath $_.PSPath -Name $flag -Value 2 -PropertyType DWord -Force -ErrorAction SilentlyContinue ^| Out-Null }; Start-Process -FilePath $cleanmgr -ArgumentList '/sagerun:99' -Wait -NoNewWindow; Write-Output 'Cleanmgr finalizado com StateFlags0099=2 em todas as categorias disponiveis.' } else { Write-Output 'cleanmgr.exe nao encontrado neste Windows.' }"
+
+echo [11/13] Limpando cache DNS...
 call :run "Flush DNS" "ipconfig /flushdns"
 
-echo [11/12] Otimizando cache de componentes e arquivos temporarios residuais...
+echo [12/13] Otimizando cache de componentes e arquivos temporarios residuais...
 call :ps "Limpeza residual segura" "Get-ChildItem $env:ProgramData -Directory -EA SilentlyContinue ^| Where-Object Name -match 'Package Cache|Temp' ^| ForEach-Object { Write-Output ('Pasta mantida para seguranca: ' + $_.FullName) }"
 
-echo [12/12] Calculando espaco em disco apos limpeza...
+echo [13/13] Calculando espaco em disco apos limpeza...
 call :ps "Espaco em disco depois da limpeza" "Get-PSDrive -PSProvider FileSystem ^| Format-Table Name,Used,Free,Root -Auto"
 call :log "Modulo LIMPEZA finalizado"
 goto :final_modulo
@@ -664,48 +663,55 @@ call :task_lock_release "ia_%~2"
 set "REBOOT_RECOMMENDED=1"
 exit /b
 
-:classic_menu
+:otimizar_inicializacao
 call :banner
-echo APPS CLASSICOS DO WINDOWS ^(submenu separado do modulo de IA^)
+call :log "Modulo OTIMIZAR INICIALIZACAO iniciado"
+echo OTIMIZAR INICIALIZACAO
 echo.
-echo [1] Habilitar Visualizador de Fotos classico
-echo [2] Instalar/registrar Paint classico ^(payload local se existir^)
-echo [3] Instalar/registrar Ferramenta de Captura classica ^(payload local se existir^)
-echo [4] Instalar/registrar Bloco de Notas classico ^(payload local se existir^)
-echo [5] Tentar instalar Photos Legacy via winget
-echo [6] Executar todos os apps classicos
-echo [0] Voltar
+echo Esta rotina aplica ajustes para iniciar mais rapido e reduzir carga visual.
 echo.
-set /p CL=Digite a opcao: 
-if "%CL%"=="0" goto :menu
-if not exist "%CLASSIC_MODULE%" (
-    call :error "Modulo de Apps Classicos nao encontrado: %CLASSIC_MODULE%"
-    pause
-    goto :menu
+echo Acoes:
+echo - ajustar efeitos visuais para melhor desempenho no usuario atual;
+echo - configurar o boot para usar o numero maximo de processadores logicos detectados;
+echo - ativar Fast Startup quando disponivel;
+echo - remover atraso de apps de inicializacao;
+echo - desativar entradas de inicializacao Run/Startup Folder de usuarios e maquina com backup;
+echo - registrar inventario das tarefas agendadas de inicializacao.
+echo.
+echo ATENCAO: programas removidos da inicializacao podem ser reativados depois pelo proprio app.
+echo Backup sera salvo em: %BASE_DIR%\StartupBackup
+echo Para confirmar, digite exatamente: OTIMIZAR INICIALIZACAO
+set /p STARTCONF=Confirmacao: 
+if not "%STARTCONF%"=="OTIMIZAR INICIALIZACAO" (
+    call :warn "Otimizacao de inicializacao cancelada por confirmacao invalida"
+    goto :final_modulo
 )
-if "%CL%"=="1" call :classic_run "photoviewer"
-if "%CL%"=="2" call :classic_run "mspaint"
-if "%CL%"=="3" call :classic_run "snippingtool"
-if "%CL%"=="4" call :classic_run "notepad"
-if "%CL%"=="5" call :classic_run "photoslegacy"
-if "%CL%"=="6" call :classic_run "all"
-goto :final_modulo
+call :criar_ponto_restauracao
 
-:classic_run
-call :task_lock_acquire "classic_%~1"
-if errorlevel 1 (
-    call :warn "Funcao Apps Classicos '%~1' ja esta em execucao em outra janela. Solicita????o ignorada."
-    exit /b 1
-)
-call :log "Modulo Apps Classicos: %~1"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%CLASSIC_MODULE%" -App "%~1" -PayloadRoot "%~dp0payloads\ClassicApps" -LogPath "%LOG%"
-if errorlevel 1 (
-    call :warn "Modulo Apps Classicos retornou erro: %~1"
-) else (
-    call :log "OK: Apps Classicos: %~1"
-)
-call :task_lock_release "classic_%~1"
-exit /b
+echo [1/7] Ajustando efeitos visuais para melhor desempenho...
+call :ps "Efeitos visuais para melhor desempenho" "New-Item -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' -Force ^| Out-Null; Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' -Name VisualFXSetting -Type DWord -Value 2; New-Item -Path 'HKCU:\Control Panel\Desktop' -Force ^| Out-Null; Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name DragFullWindows -Type String -Value '0'; Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name MenuShowDelay -Type String -Value '0'; New-Item -Path 'HKCU:\Control Panel\Desktop\WindowMetrics' -Force ^| Out-Null; Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\WindowMetrics' -Name MinAnimate -Type String -Value '0'; Write-Output 'Efeitos visuais configurados para melhor desempenho no usuario atual.'"
+
+echo [2/7] Configurando boot com maximo de processadores detectados...
+call :ps "BCDEdit numproc maximo detectado" "$cpu=(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors; if(-not $cpu -or $cpu -lt 1){ $cpu=[Environment]::ProcessorCount }; Write-Output ('Processadores logicos detectados: ' + $cpu); bcdedit /set '{current}' numproc $cpu"
+
+echo [3/7] Ativando Fast Startup quando disponivel...
+call :ps_soft "Ativar Fast Startup" "powercfg /hibernate on; New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power' -Force ^| Out-Null; Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power' -Name HiberbootEnabled -Type DWord -Value 1; Write-Output 'Fast Startup/Hiberboot habilitado.'"
+
+echo [4/7] Removendo atraso de inicializacao de aplicativos...
+call :ps "Remover StartupDelayInMSec" "New-Item -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize' -Force ^| Out-Null; Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize' -Name StartupDelayInMSec -Type DWord -Value 0; Write-Output 'StartupDelayInMSec definido como 0.'"
+
+echo [5/7] Desativando entradas Run/RunOnce com backup...
+call :ps "Backup e remocao de Run/RunOnce" "$backup=Join-Path $env:ProgramData ('OtimizacaoTI\StartupBackup\' + (Get-Date -Format yyyyMMdd_HHmmss)); New-Item -ItemType Directory -Force -Path $backup ^| Out-Null; $regFile=Join-Path $backup 'startup-run-backup.reg'; cmd /c ('reg export HKCU\Software\Microsoft\Windows\CurrentVersion\Run ""' + $regFile + '"" /y') ^| Out-Null; cmd /c ('reg export HKLM\Software\Microsoft\Windows\CurrentVersion\Run ""' + (Join-Path $backup 'startup-run-hklm-backup.reg') + '"" /y') ^| Out-Null; $keys=@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Run','HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce','HKLM:\Software\Microsoft\Windows\CurrentVersion\Run','HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce'); foreach($k in $keys){ if(Test-Path $k){ $item=Get-ItemProperty -Path $k; $item.PSObject.Properties ^| Where-Object { $_.Name -notmatch '^PS' -and $_.Name -notin @('SecurityHealth','SecurityHealthSystray') } ^| ForEach-Object { Write-Output ('Removendo inicializacao: ' + $k + '\' + $_.Name); Remove-ItemProperty -Path $k -Name $_.Name -Force -ErrorAction SilentlyContinue } } }; Write-Output ('Backup salvo em: ' + $backup)"
+
+echo [6/7] Movendo atalhos das pastas Startup com backup...
+call :ps "Mover atalhos Startup Folder" "$backup=Join-Path $env:ProgramData ('OtimizacaoTI\StartupBackup\' + (Get-Date -Format yyyyMMdd_HHmmss) + '\StartupFolders'); New-Item -ItemType Directory -Force -Path $backup ^| Out-Null; $folders=@([Environment]::GetFolderPath('Startup'),[Environment]::GetFolderPath('CommonStartup')); foreach($folder in $folders){ if($folder -and (Test-Path -LiteralPath $folder)){ $dest=Join-Path $backup (($folder -replace '[:\\\/]','_')); New-Item -ItemType Directory -Force -Path $dest ^| Out-Null; Get-ChildItem -LiteralPath $folder -Force -ErrorAction SilentlyContinue ^| ForEach-Object { Write-Output ('Movendo item Startup: ' + $_.FullName); Move-Item -LiteralPath $_.FullName -Destination $dest -Force -ErrorAction SilentlyContinue } } }; Write-Output ('Backup das pastas Startup salvo em: ' + $backup)"
+
+echo [7/7] Registrando tarefas agendadas de inicializacao para revisao...
+call :ps "Inventario de tarefas de inicializacao" "$backup=Join-Path $env:ProgramData 'OtimizacaoTI\StartupBackup'; New-Item -ItemType Directory -Force -Path $backup ^| Out-Null; $out=Join-Path $backup ('scheduled-startup-tasks-' + (Get-Date -Format yyyyMMdd_HHmmss) + '.txt'); Get-ScheduledTask ^| Where-Object { $_.Triggers -and ($_.Triggers ^| Where-Object { $_.CimClass.CimClassName -match 'Logon|Boot|Startup' }) } ^| Select-Object TaskName,TaskPath,State ^| Format-Table -AutoSize ^| Out-String ^| Set-Content -Path $out -Encoding UTF8; Write-Output ('Inventario salvo em: ' + $out)"
+
+set "REBOOT_RECOMMENDED=1"
+call :log "Modulo OTIMIZAR INICIALIZACAO finalizado"
+goto :final_modulo
 
 :tools_menu
 call :banner
